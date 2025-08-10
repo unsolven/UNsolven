@@ -1,6 +1,6 @@
 -- SolvenUI Library
 -- A modern UI library with a darker, more purple theme and mobile auto-resize.
--- Fixed the floating tabs issue by containing them in a ScrollingFrame.
+-- Fixed the layout bug from the previous version. Tabs are now correctly contained.
 
 local SolvenUI = {}
 
@@ -136,18 +136,17 @@ function SolvenUI:CreateWindow(config)
     MinimizeButton.TextSize = 12
     AddCorner(MinimizeButton, 4)
     
-    -- [[ FIX: Use a ScrollingFrame for the tabs ]]
     local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = MainFrame
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 10, 0, 45)
     TabContainer.Size = UDim2.new(1, -20, 0, 30)
-    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X -- Allow horizontal scrolling
-    TabContainer.ScrollBarThickness = 0 -- Hide the scrollbar
-    TabContainer.CanvasSize = UDim2.new()
-    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X -- Auto-resize canvas to fit tabs
-    
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
+    TabContainer.ScrollBarThickness = 0
+    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X
+    TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Parent = TabContainer
     TabLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -214,7 +213,8 @@ function SolvenUI:CreateWindow(config)
     AddButtonHover(ExpandButton, Theme.Accent, Theme.AccentHover)
     
     CloseButton.MouseButton1Click:Connect(function()
-        CreateTween(MainFrame, {Size = UDim2.new(), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.2):Play()
+        -- FIX: Use a valid UDim2 for the closing animation
+        CreateTween(MainFrame, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.2):Play()
         task.wait(0.2)
         ScreenGui:Destroy()
     end)
@@ -235,10 +235,9 @@ function SolvenUI:CreateWindow(config)
         local tabName = config.Name or "Tab"
         local tabIcon = config.Icon or ""
         
-        -- The TabButton is now parented to the TabContainer (ScrollingFrame)
         local TabButton = Instance.new("TextButton")
         TabButton.Name = tabName .. "Tab"
-        TabButton.Parent = TabContainer -- This is now the ScrollingFrame
+        TabButton.Parent = TabContainer
         TabButton.BackgroundColor3 = Theme.Secondary
         TabButton.Size = UDim2.new(0, 100, 1, 0)
         TabButton.Font = Enum.Font.GothamSemibold
@@ -256,7 +255,7 @@ function SolvenUI:CreateWindow(config)
         TabContent.ScrollBarImageColor3 = Theme.Accent
         TabContent.Visible = false
         TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        TabContent.CanvasSize = UDim2.new()
+        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
         
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Parent = TabContent
@@ -409,19 +408,21 @@ function SolvenUI:CreateWindow(config)
             return publicMethods
         end
         
-        if #Window.Tabs == 0 then
+        table.insert(Window.Tabs, Tab)
+        
+        if #Window.Tabs == 1 then
             TabContent.Visible = true
             Window.CurrentTab = Tab
             TabButton.BackgroundColor3 = Theme.Accent
             TabButton.TextColor3 = Theme.Text
         end
         
-        table.insert(Window.Tabs, Tab)
         return Tab
     end
     
     MainFrame.Visible = true
-    MainFrame.Size = UDim2.new()
+    -- FIX: Use a valid UDim2 for the opening animation
+    MainFrame.Size = UDim2.new(0, 0, 0, 0)
     CreateTween(MainFrame, {Size = windowSize}, 0.4):Play()
     
     return Window
