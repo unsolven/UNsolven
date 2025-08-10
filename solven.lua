@@ -1,6 +1,6 @@
 -- SolvenUI Library
 -- A modern UI library with a darker, more purple theme and mobile auto-resize.
--- Similar to Rayfield but with custom styling.
+-- Fixed the floating tabs issue by containing them in a ScrollingFrame.
 
 local SolvenUI = {}
 
@@ -58,35 +58,26 @@ function SolvenUI:CreateWindow(config)
     config = config or {}
     local windowTitle = config.Name or "SolvenUI Window"
     
-    -- Use scale for auto-resizing, with constraints for min/max size.
-    local windowSize = UDim2.new(0.4, 0, 0.5, 0) -- Scaled size
-    local minSize = Vector2.new(400, 300) -- Minimum size in pixels
-    local maxSize = Vector2.new(700, 600) -- Maximum size in pixels
+    local windowSize = UDim2.new(0.4, 0, 0.5, 0)
+    local minSize = Vector2.new(400, 300)
+    local maxSize = Vector2.new(700, 600)
 
-    -- Create ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SolvenUI"
     ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = RunService:IsStudio() and Player:WaitForChild("PlayerGui") or game:GetService("CoreGui")
     
-    if RunService:IsStudio() then
-        ScreenGui.Parent = Player:WaitForChild("PlayerGui")
-    else
-        ScreenGui.Parent = game:GetService("CoreGui")
-    end
-    
-    -- Main Container
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Theme.Background
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Center the frame
-    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- Position at center
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.Size = windowSize
     MainFrame.Active = true
     MainFrame.Draggable = true
     MainFrame.Visible = false
     
-    -- Add size constraints for better scaling
     local SizeConstraint = Instance.new("UISizeConstraint")
     SizeConstraint.Parent = MainFrame
     SizeConstraint.MinSize = minSize
@@ -95,17 +86,13 @@ function SolvenUI:CreateWindow(config)
     AddCorner(MainFrame, 10)
     AddStroke(MainFrame, Theme.Border, 1)
     
-    -- Title Bar (Thinner)
     local TitleBar = Instance.new("Frame")
     TitleBar.Name = "TitleBar"
     TitleBar.Parent = MainFrame
     TitleBar.BackgroundColor3 = Theme.Secondary
-    TitleBar.Position = UDim2.new(0, 0, 0, 0)
-    TitleBar.Size = UDim2.new(1, 0, 0, 35) -- Made thinner
-    
+    TitleBar.Size = UDim2.new(1, 0, 0, 35)
     AddCorner(TitleBar, 10)
     
-    -- Fix corner clipping
     local TitleBarFix = Instance.new("Frame")
     TitleBarFix.Parent = TitleBar
     TitleBarFix.BackgroundColor3 = Theme.Secondary
@@ -113,7 +100,6 @@ function SolvenUI:CreateWindow(config)
     TitleBarFix.Size = UDim2.new(1, 0, 0, 10)
     TitleBarFix.BorderSizePixel = 0
     
-    -- Title
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
     Title.Parent = TitleBar
@@ -123,10 +109,9 @@ function SolvenUI:CreateWindow(config)
     Title.Font = Enum.Font.GothamBold
     Title.Text = windowTitle
     Title.TextColor3 = Theme.Text
-    Title.TextSize = 15 -- Slightly smaller
+    Title.TextSize = 15
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Close Button (Smaller)
     local CloseButton = Instance.new("TextButton")
     CloseButton.Name = "CloseButton"
     CloseButton.Parent = TitleBar
@@ -137,10 +122,8 @@ function SolvenUI:CreateWindow(config)
     CloseButton.Text = "×"
     CloseButton.TextColor3 = Theme.Text
     CloseButton.TextSize = 12
-    
     AddCorner(CloseButton, 4)
     
-    -- Minimize Button (Smaller)
     local MinimizeButton = Instance.new("TextButton")
     MinimizeButton.Name = "MinimizeButton"
     MinimizeButton.Parent = TitleBar
@@ -151,16 +134,19 @@ function SolvenUI:CreateWindow(config)
     MinimizeButton.Text = "−"
     MinimizeButton.TextColor3 = Theme.Text
     MinimizeButton.TextSize = 12
-    
     AddCorner(MinimizeButton, 4)
     
-    -- Tab Container
-    local TabContainer = Instance.new("Frame")
+    -- [[ FIX: Use a ScrollingFrame for the tabs ]]
+    local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = MainFrame
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 10, 0, 45)
-    TabContainer.Size = UDim2.new(1, -20, 0, 30) -- Made thinner
+    TabContainer.Size = UDim2.new(1, -20, 0, 30)
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X -- Allow horizontal scrolling
+    TabContainer.ScrollBarThickness = 0 -- Hide the scrollbar
+    TabContainer.CanvasSize = UDim2.new()
+    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X -- Auto-resize canvas to fit tabs
     
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Parent = TabContainer
@@ -169,25 +155,22 @@ function SolvenUI:CreateWindow(config)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Padding = UDim.new(0, 5)
     
-    -- Content Container
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Parent = MainFrame
     ContentContainer.BackgroundTransparency = 1
-    ContentContainer.Position = UDim2.new(0, 10, 0, 85) -- Adjusted position
-    ContentContainer.Size = UDim2.new(1, -20, 1, -95) -- Adjusted size
+    ContentContainer.Position = UDim2.new(0, 10, 0, 85)
+    ContentContainer.Size = UDim2.new(1, -20, 1, -95)
     
-    -- Minimized Frame
     local MinimizedFrame = Instance.new("Frame")
     MinimizedFrame.Name = "MinimizedFrame"
     MinimizedFrame.Parent = ScreenGui
     MinimizedFrame.BackgroundColor3 = Theme.Secondary
     MinimizedFrame.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedFrame.Size = UDim2.new(0, 180, 0, 28) -- Smaller
+    MinimizedFrame.Size = UDim2.new(0, 180, 0, 28)
     MinimizedFrame.Visible = false
     MinimizedFrame.Active = true
     MinimizedFrame.Draggable = true
-    
     AddCorner(MinimizedFrame, 6)
     AddStroke(MinimizedFrame, Theme.Border, 1)
     
@@ -211,20 +194,16 @@ function SolvenUI:CreateWindow(config)
     ExpandButton.Text = "+"
     ExpandButton.TextColor3 = Theme.Text
     ExpandButton.TextSize = 10
-    
     AddCorner(ExpandButton, 3)
     
-    -- Window Object
     local Window = {}
     Window.Tabs = {}
     Window.CurrentTab = nil
     
-    -- Button Hover Effects
     local function AddButtonHover(button, normalColor, hoverColor)
         button.MouseEnter:Connect(function()
             CreateTween(button, {BackgroundColor3 = hoverColor}):Play()
         end)
-        
         button.MouseLeave:Connect(function()
             CreateTween(button, {BackgroundColor3 = normalColor}):Play()
         end)
@@ -234,10 +213,9 @@ function SolvenUI:CreateWindow(config)
     AddButtonHover(MinimizeButton, Theme.Accent, Theme.AccentHover)
     AddButtonHover(ExpandButton, Theme.Accent, Theme.AccentHover)
     
-    -- Window Controls
     CloseButton.MouseButton1Click:Connect(function()
-        CreateTween(MainFrame, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.2):Play()
-        wait(0.2)
+        CreateTween(MainFrame, {Size = UDim2.new(), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.2):Play()
+        task.wait(0.2)
         ScreenGui:Destroy()
     end)
     
@@ -252,26 +230,23 @@ function SolvenUI:CreateWindow(config)
         MainFrame.Visible = true
     end)
     
-    -- Tab Functions
     function Window:CreateTab(config)
         config = config or {}
         local tabName = config.Name or "Tab"
         local tabIcon = config.Icon or ""
         
-        -- Tab Button
+        -- The TabButton is now parented to the TabContainer (ScrollingFrame)
         local TabButton = Instance.new("TextButton")
         TabButton.Name = tabName .. "Tab"
-        TabButton.Parent = TabContainer
+        TabButton.Parent = TabContainer -- This is now the ScrollingFrame
         TabButton.BackgroundColor3 = Theme.Secondary
-        TabButton.Size = UDim2.new(0, 100, 1, 0) -- Smaller width
+        TabButton.Size = UDim2.new(0, 100, 1, 0)
         TabButton.Font = Enum.Font.GothamSemibold
         TabButton.Text = tabIcon .. " " .. tabName
         TabButton.TextColor3 = Theme.TextSecondary
-        TabButton.TextSize = 11 -- Smaller font
-        
+        TabButton.TextSize = 11
         AddCorner(TabButton, 5)
         
-        -- Tab Content
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Name = tabName .. "Content"
         TabContent.Parent = ContentContainer
@@ -286,48 +261,44 @@ function SolvenUI:CreateWindow(config)
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Parent = TabContent
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 6) -- Tighter padding
+        ContentLayout.Padding = UDim.new(0, 6)
         
         local ContentPadding = Instance.new("UIPadding")
         ContentPadding.Parent = TabContent
         ContentPadding.PaddingTop = UDim.new(0, 2)
         ContentPadding.PaddingBottom = UDim.new(0, 2)
         
-        -- Tab Object
         local Tab = {}
         Tab.Content = TabContent
         Tab.Button = TabButton
-        Tab.Elements = {}
         
-        -- Tab Selection
         TabButton.MouseButton1Click:Connect(function()
             if Window.CurrentTab == Tab then return end
             
             for _, otherTab in pairs(Window.Tabs) do
                 otherTab.Content.Visible = false
                 if otherTab.Button.BackgroundColor3 ~= Theme.Secondary then
-                    CreateTween(otherTab.Button, { BackgroundColor3 = Theme.Secondary, TextColor3 = Theme.TextSecondary }):Play()
+                    CreateTween(otherTab.Button, {BackgroundColor3 = Theme.Secondary, TextColor3 = Theme.TextSecondary}):Play()
                 end
             end
             
             TabContent.Visible = true
             Window.CurrentTab = Tab
-            CreateTween(TabButton, { BackgroundColor3 = Theme.Accent, TextColor3 = Theme.Text }):Play()
+            CreateTween(TabButton, {BackgroundColor3 = Theme.Accent, TextColor3 = Theme.Text}):Play()
         end)
         
         TabButton.MouseEnter:Connect(function()
             if Window.CurrentTab ~= Tab then
-                CreateTween(TabButton, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
+                CreateTween(TabButton, {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if Window.CurrentTab ~= Tab then
-                 CreateTween(TabButton, { BackgroundColor3 = Theme.Secondary }):Play()
+                CreateTween(TabButton, {BackgroundColor3 = Theme.Secondary}):Play()
             end
         end)
         
-        -- Element Creation Functions
         function Tab:CreateButton(config)
             config = config or {}
             local buttonText = config.Name or "Button"
@@ -438,7 +409,6 @@ function SolvenUI:CreateWindow(config)
             return publicMethods
         end
         
-        -- Auto-select first tab
         if #Window.Tabs == 0 then
             TabContent.Visible = true
             Window.CurrentTab = Tab
@@ -450,70 +420,11 @@ function SolvenUI:CreateWindow(config)
         return Tab
     end
     
-    -- Show Window with Animation
     MainFrame.Visible = true
-    MainFrame.Size = UDim2.new(0,0,0,0)
+    MainFrame.Size = UDim2.new()
     CreateTween(MainFrame, {Size = windowSize}, 0.4):Play()
     
     return Window
-end
-
--- Notification System
-function SolvenUI:Notify(config)
-    config = config or {}
-    local title = config.Title or "Notification"
-    local content = config.Content or ""
-    local duration = config.Duration or 3
-    
-    local ScreenGui = Player.PlayerGui:FindFirstChild("SolvenUI") or Instance.new("ScreenGui", Player.PlayerGui)
-    ScreenGui.Name = "SolvenUI"
-    
-    local Notification = Instance.new("Frame")
-    Notification.Name = "Notification"
-    Notification.Parent = ScreenGui
-    Notification.BackgroundColor3 = Theme.Secondary
-    Notification.Position = UDim2.new(1, 10, 1, -100) -- Start off-screen
-    Notification.Size = UDim2.new(0, 280, 0, 70) -- Smaller
-    Notification.AnchorPoint = Vector2.new(1, 1)
-    
-    AddCorner(Notification, 6)
-    AddStroke(Notification, Theme.Accent, 1.5)
-    
-    local NotifTitle = Instance.new("TextLabel")
-    NotifTitle.Parent = Notification
-    NotifTitle.BackgroundTransparency = 1
-    NotifTitle.Position = UDim2.new(0, 12, 0, 6)
-    NotifTitle.Size = UDim2.new(1, -24, 0, 20)
-    NotifTitle.Font = Enum.Font.GothamBold
-    NotifTitle.Text = title
-    NotifTitle.TextColor3 = Theme.Text
-    NotifTitle.TextSize = 13
-    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local NotifContent = Instance.new("TextLabel")
-    NotifContent.Parent = Notification
-    NotifContent.BackgroundTransparency = 1
-    NotifContent.Position = UDim2.new(0, 12, 0, 26)
-    NotifContent.Size = UDim2.new(1, -24, 1, -32)
-    NotifContent.Font = Enum.Font.Gotham
-    NotifContent.Text = content
-    NotifContent.TextColor3 = Theme.TextSecondary
-    NotifContent.TextSize = 11
-    NotifContent.TextWrapped = true
-    NotifContent.TextXAlignment = Enum.TextXAlignment.Left
-    NotifContent.TextYAlignment = Enum.TextYAlignment.Top
-    
-    -- Animate in
-    CreateTween(Notification, {Position = UDim2.new(1, -10, 1, -100)}):Play()
-    
-    -- Auto dismiss
-    task.delay(duration, function()
-        if Notification and Notification.Parent then
-            CreateTween(Notification, {Position = UDim2.new(1, 10, 1, -100)}):Play()
-            task.wait(0.3)
-            Notification:Destroy()
-        end
-    end)
 end
 
 return SolvenUI
