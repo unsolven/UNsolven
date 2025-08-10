@@ -263,19 +263,40 @@ function SolvenUI:CreateWindow(config)
         local tabName = config.Name or "Tab"
         local tabIcon = config.Icon or ""
         
-        -- Tab Button
+        --[[ BUG FIX:
+            Instead of one TextButton, we create a Frame with a TextLabel inside.
+            This avoids a rendering bug with TextButtons in ScrollingFrames.
+            A transparent button on top handles clicks.
+        ]]
+
+        -- Tab Button Container
+        local TabButtonFrame = Instance.new("Frame")
+        TabButtonFrame.Name = tabName .. "Tab"
+        TabButtonFrame.Parent = TabContainer
+        TabButtonFrame.BackgroundColor3 = Theme.Secondary
+        TabButtonFrame.Size = UDim2.new(0, 100, 1, 0)
+        TabButtonFrame.ClipsDescendants = true
+        AddCorner(TabButtonFrame, 5)
+
+        -- Tab Label
+        local TabLabel = Instance.new("TextLabel")
+        TabLabel.Name = "Label"
+        TabLabel.Parent = TabButtonFrame
+        TabLabel.BackgroundTransparency = 1
+        TabLabel.Size = UDim2.new(1, 0, 1, 0)
+        TabLabel.Font = Enum.Font.GothamSemibold
+        TabLabel.Text = tabIcon .. " " .. tabName
+        TabLabel.TextColor3 = Theme.TextSecondary
+        TabLabel.TextSize = 11
+
+        -- Click Detector Button
         local TabButton = Instance.new("TextButton")
-        TabButton.Name = tabName .. "Tab"
-        TabButton.Parent = TabContainer
-        TabButton.BackgroundColor3 = Theme.Secondary
-        TabButton.Size = UDim2.new(0, 100, 1, 0) -- Smaller width
-        TabButton.Font = Enum.Font.GothamSemibold
-        TabButton.Text = tabIcon .. " " .. tabName
-        TabButton.TextColor3 = Theme.TextSecondary
-        TabButton.TextSize = 11 -- Smaller font
-        
-        AddCorner(TabButton, 5)
-        
+        TabButton.Name = "ClickDetector"
+        TabButton.Parent = TabButtonFrame
+        TabButton.BackgroundTransparency = 1
+        TabButton.Size = UDim2.new(1, 0, 1, 0)
+        TabButton.Text = ""
+
         -- Tab Content (Vertical Scrolling)
         local TabContent = Instance.new("ScrollingFrame")
         TabContent.Name = tabName .. "Content"
@@ -301,7 +322,9 @@ function SolvenUI:CreateWindow(config)
         -- Tab Object
         local Tab = {}
         Tab.Content = TabContent
-        Tab.Button = TabButton
+        Tab.ButtonFrame = TabButtonFrame -- The visible frame
+        Tab.ButtonLabel = TabLabel     -- The text label
+        Tab.Button = TabButton         -- The click detector
         Tab.Elements = {}
         
         -- Tab Selection
@@ -310,25 +333,27 @@ function SolvenUI:CreateWindow(config)
             
             for _, otherTab in pairs(Window.Tabs) do
                 otherTab.Content.Visible = false
-                if otherTab.Button.BackgroundColor3 ~= Theme.Secondary then
-                    CreateTween(otherTab.Button, { BackgroundColor3 = Theme.Secondary, TextColor3 = Theme.TextSecondary }):Play()
+                if otherTab.ButtonFrame.BackgroundColor3 ~= Theme.Secondary then
+                    CreateTween(otherTab.ButtonFrame, { BackgroundColor3 = Theme.Secondary }):Play()
+                    CreateTween(otherTab.ButtonLabel, { TextColor3 = Theme.TextSecondary }):Play()
                 end
             end
             
             TabContent.Visible = true
             Window.CurrentTab = Tab
-            CreateTween(TabButton, { BackgroundColor3 = Theme.Accent, TextColor3 = Theme.Text }):Play()
+            CreateTween(TabButtonFrame, { BackgroundColor3 = Theme.Accent }):Play()
+            CreateTween(TabLabel, { TextColor3 = Theme.Text }):Play()
         end)
         
         TabButton.MouseEnter:Connect(function()
             if Window.CurrentTab ~= Tab then
-                CreateTween(TabButton, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
+                CreateTween(TabButtonFrame, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if Window.CurrentTab ~= Tab then
-                 CreateTween(TabButton, { BackgroundColor3 = Theme.Secondary }):Play()
+                 CreateTween(TabButtonFrame, { BackgroundColor3 = Theme.Secondary }):Play()
             end
         end)
         
@@ -447,8 +472,8 @@ function SolvenUI:CreateWindow(config)
         if #Window.Tabs == 0 then
             TabContent.Visible = true
             Window.CurrentTab = Tab
-            TabButton.BackgroundColor3 = Theme.Accent
-            TabButton.TextColor3 = Theme.Text
+            TabButtonFrame.BackgroundColor3 = Theme.Accent
+            TabLabel.TextColor3 = Theme.Text
         end
         
         table.insert(Window.Tabs, Tab)
