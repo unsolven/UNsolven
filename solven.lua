@@ -154,17 +154,13 @@ function SolvenUI:CreateWindow(config)
     
     AddCorner(MinimizeButton, 4)
     
-    -- Tab Container (Scrolling for horizontal tabs)
-    local TabContainer = Instance.new("ScrollingFrame")
+    -- Tab Container (Regular Frame instead of ScrollingFrame)
+    local TabContainer = Instance.new("Frame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = MainFrame
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 10, 0, 45)
     TabContainer.Size = UDim2.new(1, -20, 0, 30)
-    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
-    TabContainer.ScrollBarThickness = 4
-    TabContainer.ScrollBarImageColor3 = Theme.Accent
-    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X
     TabContainer.BorderSizePixel = 0
 
     local TabLayout = Instance.new("UIListLayout")
@@ -263,49 +259,26 @@ function SolvenUI:CreateWindow(config)
         local tabName = config.Name or "Tab"
         local tabIcon = config.Icon or ""
         
-        -- Create tab text (combine icon and name properly)
-        local tabDisplayText = ""
+        -- Create display text
+        local displayText = tabName
         if tabIcon and tabIcon ~= "" then
-            tabDisplayText = tabIcon .. " " .. tabName
-        else
-            tabDisplayText = tabName
+            displayText = tabIcon .. " " .. tabName
         end
 
-        -- Tab Button Frame (Container)
-        local TabButtonFrame = Instance.new("Frame")
-        TabButtonFrame.Name = tabName .. "TabFrame"
-        TabButtonFrame.Parent = TabContainer
-        TabButtonFrame.BackgroundColor3 = Theme.Secondary
-        TabButtonFrame.Size = UDim2.new(0, 100, 1, 0)
-        TabButtonFrame.ClipsDescendants = false
-        
-        AddCorner(TabButtonFrame, 5)
-
-        -- Tab Label (Visible Text)
-        local TabLabel = Instance.new("TextLabel")
-        TabLabel.Name = "TabLabel"
-        TabLabel.Parent = TabButtonFrame
-        TabLabel.BackgroundTransparency = 1
-        TabLabel.Size = UDim2.new(1, 0, 1, 0)
-        TabLabel.Position = UDim2.new(0, 0, 0, 0)
-        TabLabel.Font = Enum.Font.GothamSemibold
-        TabLabel.Text = tabDisplayText
-        TabLabel.TextColor3 = Theme.TextSecondary
-        TabLabel.TextSize = 11
-        TabLabel.TextScaled = false
-        TabLabel.TextWrapped = false
-        TabLabel.TextXAlignment = Enum.TextXAlignment.Center
-        TabLabel.TextYAlignment = Enum.TextYAlignment.Center
-
-        -- Invisible Click Button
+        -- Simple TextButton approach
         local TabButton = Instance.new("TextButton")
-        TabButton.Name = tabName .. "TabButton"
-        TabButton.Parent = TabButtonFrame
-        TabButton.BackgroundTransparency = 1
-        TabButton.Size = UDim2.new(1, 0, 1, 0)
-        TabButton.Position = UDim2.new(0, 0, 0, 0)
-        TabButton.Text = ""
-        TabButton.ZIndex = 2
+        TabButton.Name = tabName .. "_Tab"
+        TabButton.Parent = TabContainer
+        TabButton.BackgroundColor3 = Theme.Secondary
+        TabButton.Size = UDim2.new(0, 120, 1, 0) -- Fixed width
+        TabButton.AutoButtonColor = false
+        TabButton.Font = Enum.Font.GothamSemibold
+        TabButton.TextColor3 = Theme.TextSecondary
+        TabButton.TextSize = 11
+        TabButton.Text = displayText
+        TabButton.TextTruncate = Enum.TextTruncate.AtEnd
+        
+        AddCorner(TabButton, 5)
 
         -- Tab Content (Vertical Scrolling)
         local TabContent = Instance.new("ScrollingFrame")
