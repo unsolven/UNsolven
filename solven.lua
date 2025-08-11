@@ -153,8 +153,6 @@ function SolvenUI:CreateWindow(config)
     MinimizeButton.TextSize = 12
     
     AddCorner(MinimizeButton, 4)
-    
-    -- START OF CHANGES --
 
     -- Tab Container with Horizontal Scroll
     local TabContainer = Instance.new("ScrollingFrame")
@@ -162,29 +160,33 @@ function SolvenUI:CreateWindow(config)
     TabContainer.Parent = MainFrame
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 10, 0, 45)
-    TabContainer.Size = UDim2.new(1, -20, 0, 40) -- Give enough height for tabs and scrollbar
+    TabContainer.Size = UDim2.new(1, -20, 0, 40)
     TabContainer.BorderSizePixel = 0
-    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X -- Enable horizontal scrolling
-    TabContainer.ScrollBarThickness = 6 -- Make scrollbar visible
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
+    TabContainer.ScrollBarThickness = 6
     TabContainer.ScrollBarImageColor3 = Theme.Accent
-    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X -- Let content determine scroll size
+    
+    -- START OF FIX --
+    -- Set CanvasSize Y-Scale to 1 so the canvas has height, allowing tabs to be visible.
+    -- AutomaticCanvasSize will handle the X-axis.
+    TabContainer.CanvasSize = UDim2.new(0, 0, 1, 0) 
+    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X 
+    -- END OF FIX --
 
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Parent = TabContainer
     TabLayout.FillDirection = Enum.FillDirection.Horizontal
-    TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center -- Center tabs vertically
+    TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Padding = UDim.new(0, 5)
-
-    -- END OF CHANGES --
     
     -- Content Container
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Parent = MainFrame
     ContentContainer.BackgroundTransparency = 1
-    ContentContainer.Position = UDim2.new(0, 10, 0, 95) -- Adjusted position due to taller tab container
-    ContentContainer.Size = UDim2.new(1, -20, 1, -105) -- Adjusted size
+    ContentContainer.Position = UDim2.new(0, 10, 0, 95)
+    ContentContainer.Size = UDim2.new(1, -20, 1, -105)
     
     -- Minimized Frame
     local MinimizedFrame = Instance.new("Frame")
@@ -192,7 +194,7 @@ function SolvenUI:CreateWindow(config)
     MinimizedFrame.Parent = ScreenGui
     MinimizedFrame.BackgroundColor3 = Theme.Secondary
     MinimizedFrame.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedFrame.Size = UDim2.new(0, 180, 0, 28) -- Smaller
+    MinimizedFrame.Size = UDim2.new(0, 180, 0, 28)
     MinimizedFrame.Visible = false
     MinimizedFrame.Active = true
     MinimizedFrame.Draggable = true
@@ -278,10 +280,7 @@ function SolvenUI:CreateWindow(config)
         TabButton.Name = "Tab_" .. tabName
         TabButton.Parent = TabContainer
         TabButton.BackgroundColor3 = Theme.Secondary
-        -- START OF CHANGES --
-        -- Set a fixed pixel height for the button, smaller than the container, instead of using scale
-        TabButton.Size = UDim2.new(0, 100, 0, 30)
-        -- END OF CHANGES --
+        TabButton.Size = UDim2.new(0, 100, 0, 30) -- Fixed pixel height
         TabButton.Text = displayText
         TabButton.TextColor3 = Theme.TextSecondary
         TabButton.TextSize = 12
