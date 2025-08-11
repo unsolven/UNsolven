@@ -362,17 +362,19 @@ function SolvenUI:CreateWindow(config)
             Button.Name = buttonText .. "Button"
             Button.Parent = TabContent
             Button.BackgroundColor3 = Theme.Accent
-            Button.Size = UDim2.new(1, 0, 0, 32)
+            Button.Size = UDim2.new(1, -10, 0, 32) -- Adjusted size for padding
             Button.Font = Enum.Font.GothamSemibold
             Button.Text = buttonText
             Button.TextColor3 = Theme.Text
             Button.TextSize = 13
+            Button.LayoutOrder = #Tab.Elements + 1
             
             AddCorner(Button, 6)
             AddButtonHover(Button, Theme.Accent, Theme.AccentHover)
             
             Button.MouseButton1Click:Connect(callback)
             
+            table.insert(Tab.Elements, Button)
             return Button
         end
         
@@ -386,7 +388,8 @@ function SolvenUI:CreateWindow(config)
             ToggleFrame.Name = toggleText .. "Toggle"
             ToggleFrame.Parent = TabContent
             ToggleFrame.BackgroundColor3 = Theme.Secondary
-            ToggleFrame.Size = UDim2.new(1, 0, 0, 32)
+            ToggleFrame.Size = UDim2.new(1, -10, 0, 32) -- Adjusted size for padding
+            ToggleFrame.LayoutOrder = #Tab.Elements + 1
             
             AddCorner(ToggleFrame, 6)
             
@@ -437,6 +440,7 @@ function SolvenUI:CreateWindow(config)
                 CreateTween(ToggleDot, { Position = toggleState and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6) }, 0.1):Play()
             end
             
+            table.insert(Tab.Elements, ToggleFrame)
             return publicMethods
         end
         
@@ -448,18 +452,20 @@ function SolvenUI:CreateWindow(config)
             Label.Name = "Label"
             Label.Parent = TabContent
             Label.BackgroundTransparency = 1
-            Label.Size = UDim2.new(1, 0, 0, 20)
+            Label.Size = UDim2.new(1, -10, 0, 20) -- Adjusted size for padding
             Label.Font = Enum.Font.Gotham
             Label.Text = labelText
             Label.TextColor3 = Theme.TextSecondary
             Label.TextSize = 11
             Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.LayoutOrder = #Tab.Elements + 1
             
             local publicMethods = {}
             function publicMethods:SetText(text)
                 Label.Text = text
             end
             
+            table.insert(Tab.Elements, Label)
             return publicMethods
         end
         
