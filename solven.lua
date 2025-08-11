@@ -154,7 +154,7 @@ function SolvenUI:CreateWindow(config)
     
     AddCorner(MinimizeButton, 4)
     
-    -- Tab Container (Regular Frame instead of ScrollingFrame)
+    -- Tab Container
     local TabContainer = Instance.new("Frame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = MainFrame
@@ -175,8 +175,8 @@ function SolvenUI:CreateWindow(config)
     ContentContainer.Name = "ContentContainer"
     ContentContainer.Parent = MainFrame
     ContentContainer.BackgroundTransparency = 1
-    ContentContainer.Position = UDim2.new(0, 10, 0, 85) -- Adjusted position
-    ContentContainer.Size = UDim2.new(1, -20, 1, -95) -- Adjusted size
+    ContentContainer.Position = UDim2.new(0, 10, 0, 85)
+    ContentContainer.Size = UDim2.new(1, -20, 1, -95)
     
     -- Minimized Frame
     local MinimizedFrame = Instance.new("Frame")
@@ -256,234 +256,234 @@ function SolvenUI:CreateWindow(config)
     -- Tab Functions
     function Window:CreateTab(config)
         config = config or {}
-        local tabName = config.Name or "Tab"
+        local tabName = config.Name or "Tab " .. (#Window.Tabs + 1)
         local tabIcon = config.Icon or ""
         
-        -- Create tab text
-        local tabDisplayText = tabName
-        if tabIcon and tabIcon ~= "" then
-            tabDisplayText = tabIcon .. " " .. tabName
+        -- Create display text
+        local displayText = tabName
+        if tabIcon ~= "" then
+            displayText = tabIcon .. " " .. tabName
         end
-
-        -- Debug: Print the text to make sure it's not empty
-        print("Creating tab with text: '" .. tabDisplayText .. "'")
         
-        -- Simple TextButton approach
+        -- Create Tab Button
         local TabButton = Instance.new("TextButton")
-        TabButton.Name = tabName .. "Tab"
+        TabButton.Name = "Tab_" .. tabName
         TabButton.Parent = TabContainer
         TabButton.BackgroundColor3 = Theme.Secondary
-        TabButton.Size = UDim2.new(0, 120, 1, 0) -- Fixed width instead of auto-size
-        TabButton.Font = Enum.Font.SourceSans -- Try a different font
-        TabButton.Text = tabDisplayText
-        TabButton.TextColor3 = Theme.Text -- Use bright text color
-        TabButton.TextSize = 14 -- Larger text size
-        TabButton.TextStrokeTransparency = 0 -- Add text stroke
-        TabButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-        TabButton.BorderSizePixel = 0
-        TabButton.TextScaled = false
-        TabButton.TextWrapped = false
+        TabButton.Size = UDim2.new(0, 100, 1, 0)
+        TabButton.Text = displayText
+        TabButton.TextColor3 = Theme.TextSecondary
+        TabButton.TextSize = 12
+        TabButton.Font = Enum.Font.SourceSansBold
+        TabButton.LayoutOrder = #Window.Tabs + 1
         
-        AddCorner(TabButton, 5)
-
-        -- Tab Content (Vertical Scrolling)
-        local TabContent = Instance.new("ScrollingFrame")
-        TabContent.Name = tabName .. "Content"
-        TabContent.Parent = ContentContainer
-        TabContent.BackgroundTransparency = 1
-        TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.Position = UDim2.new(0, 0, 0, 0)
-        TabContent.ScrollBarThickness = 6
-        TabContent.ScrollBarImageColor3 = Theme.Accent
-        TabContent.ScrollBarImageTransparency = 0
-        TabContent.Visible = false
-        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Start with no canvas size
-        TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        TabContent.ScrollingDirection = Enum.ScrollingDirection.Y
-        TabContent.BorderSizePixel = 0
-        TabContent.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-        TabContent.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-        TabContent.MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+        AddCorner(TabButton, 6)
         
-        local ContentLayout = Instance.new("UIListLayout")
-        ContentLayout.Parent = TabContent
-        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 6)
-        ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        -- Tab Content Frame
+        local TabFrame = Instance.new("ScrollingFrame")
+        TabFrame.Name = "Content_" .. tabName
+        TabFrame.Parent = ContentContainer
+        TabFrame.Size = UDim2.new(1, 0, 1, 0)
+        TabFrame.Position = UDim2.new(0, 0, 0, 0)
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.BorderSizePixel = 0
+        TabFrame.ScrollBarThickness = 6
+        TabFrame.ScrollBarImageColor3 = Theme.Accent
+        TabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+        TabFrame.Visible = false
         
-        local ContentPadding = Instance.new("UIPadding")
-        ContentPadding.Parent = TabContent
-        ContentPadding.PaddingTop = UDim.new(0, 5)
-        ContentPadding.PaddingBottom = UDim.new(0, 5)
-        ContentPadding.PaddingLeft = UDim.new(0, 5)
-        ContentPadding.PaddingRight = UDim.new(0, 5)
+        -- Layout for tab content
+        local Layout = Instance.new("UIListLayout")
+        Layout.Parent = TabFrame
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
+        Layout.Padding = UDim.new(0, 8)
         
-        -- Tab Object
-        local Tab = {}
-        Tab.Content = TabContent
-        Tab.Button = TabButton
-        Tab.Elements = {}
+        local Padding = Instance.new("UIPadding")
+        Padding.Parent = TabFrame
+        Padding.PaddingTop = UDim.new(0, 10)
+        Padding.PaddingBottom = UDim.new(0, 10)
+        Padding.PaddingLeft = UDim.new(0, 5)
+        Padding.PaddingRight = UDim.new(0, 15)
         
-        -- Tab Selection
+        -- Tab object
+        local Tab = {
+            Name = tabName,
+            Button = TabButton,
+            Frame = TabFrame,
+            Layout = Layout,
+            Elements = {},
+            ElementCount = 0
+        }
+        
+        -- Tab selection logic
         TabButton.MouseButton1Click:Connect(function()
-            if Window.CurrentTab == Tab then return end
-            
+            -- Hide all other tabs
             for _, otherTab in pairs(Window.Tabs) do
-                otherTab.Content.Visible = false
-                CreateTween(otherTab.Button, { BackgroundColor3 = Theme.Secondary }):Play()
-                CreateTween(otherTab.Button, { TextColor3 = Theme.TextSecondary }):Play()
+                if otherTab ~= Tab then
+                    otherTab.Frame.Visible = false
+                    otherTab.Button.BackgroundColor3 = Theme.Secondary
+                    otherTab.Button.TextColor3 = Theme.TextSecondary
+                end
             end
             
-            TabContent.Visible = true
+            -- Show this tab
+            TabFrame.Visible = true
+            TabButton.BackgroundColor3 = Theme.Accent
+            TabButton.TextColor3 = Theme.Text
             Window.CurrentTab = Tab
-            CreateTween(TabButton, { BackgroundColor3 = Theme.Accent }):Play()
-            CreateTween(TabButton, { TextColor3 = Theme.Text }):Play()
         end)
         
+        -- Hover effects
         TabButton.MouseEnter:Connect(function()
-            if Window.CurrentTab ~= Tab then
-                CreateTween(TabButton, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
+            if Tab ~= Window.CurrentTab then
+                CreateTween(TabButton, {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
-            if Window.CurrentTab ~= Tab then
-                CreateTween(TabButton, { BackgroundColor3 = Theme.Secondary }):Play()
+            if Tab ~= Window.CurrentTab then
+                CreateTween(TabButton, {BackgroundColor3 = Theme.Secondary}):Play()
             end
         end)
         
-        -- Element Creation Functions
+        -- Element creation functions
         function Tab:CreateButton(config)
             config = config or {}
-            local buttonText = config.Name or "Button"
+            local name = config.Name or "Button"
             local callback = config.Callback or function() end
             
             local Button = Instance.new("TextButton")
-            Button.Name = buttonText .. "Button"
-            Button.Parent = TabContent
+            Button.Name = name
+            Button.Parent = TabFrame
+            Button.Size = UDim2.new(1, 0, 0, 35)
             Button.BackgroundColor3 = Theme.Accent
-            Button.Size = UDim2.new(1, -10, 0, 32) -- Adjusted size for padding
-            Button.Font = Enum.Font.GothamSemibold
-            Button.Text = buttonText
+            Button.Text = name
             Button.TextColor3 = Theme.Text
-            Button.TextSize = 13
-            Button.LayoutOrder = #Tab.Elements + 1
+            Button.TextSize = 14
+            Button.Font = Enum.Font.SourceSansBold
+            Button.LayoutOrder = Tab.ElementCount + 1
             
-            AddCorner(Button, 6)
-            AddButtonHover(Button, Theme.Accent, Theme.AccentHover)
+            AddCorner(Button, 8)
+            
+            -- Hover effect
+            Button.MouseEnter:Connect(function()
+                CreateTween(Button, {BackgroundColor3 = Theme.AccentHover}):Play()
+            end)
+            Button.MouseLeave:Connect(function()
+                CreateTween(Button, {BackgroundColor3 = Theme.Accent}):Play()
+            end)
             
             Button.MouseButton1Click:Connect(callback)
             
+            Tab.ElementCount = Tab.ElementCount + 1
             table.insert(Tab.Elements, Button)
             return Button
         end
         
         function Tab:CreateToggle(config)
             config = config or {}
-            local toggleText = config.Name or "Toggle"
-            local defaultValue = config.Default or false
+            local name = config.Name or "Toggle"
+            local default = config.Default or false
             local callback = config.Callback or function() end
             
-            local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Name = toggleText .. "Toggle"
-            ToggleFrame.Parent = TabContent
-            ToggleFrame.BackgroundColor3 = Theme.Secondary
-            ToggleFrame.Size = UDim2.new(1, -10, 0, 32) -- Adjusted size for padding
-            ToggleFrame.LayoutOrder = #Tab.Elements + 1
+            local Container = Instance.new("Frame")
+            Container.Name = name .. "Container"
+            Container.Parent = TabFrame
+            Container.Size = UDim2.new(1, 0, 0, 35)
+            Container.BackgroundColor3 = Theme.Secondary
+            Container.LayoutOrder = Tab.ElementCount + 1
             
-            AddCorner(ToggleFrame, 6)
+            AddCorner(Container, 8)
             
-            local ToggleLabel = Instance.new("TextLabel")
-            ToggleLabel.Parent = ToggleFrame
-            ToggleLabel.BackgroundTransparency = 1
-            ToggleLabel.Position = UDim2.new(0, 12, 0, 0)
-            ToggleLabel.Size = UDim2.new(1, -55, 1, 0)
-            ToggleLabel.Font = Enum.Font.GothamSemibold
-            ToggleLabel.Text = toggleText
-            ToggleLabel.TextColor3 = Theme.Text
-            ToggleLabel.TextSize = 11
-            ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            local Label = Instance.new("TextLabel")
+            Label.Parent = Container
+            Label.Size = UDim2.new(1, -50, 1, 0)
+            Label.Position = UDim2.new(0, 10, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = name
+            Label.TextColor3 = Theme.Text
+            Label.TextSize = 14
+            Label.Font = Enum.Font.SourceSans
+            Label.TextXAlignment = Enum.TextXAlignment.Left
             
             local ToggleButton = Instance.new("TextButton")
-            ToggleButton.Parent = ToggleFrame
-            ToggleButton.BackgroundColor3 = defaultValue and Theme.Success or Theme.Border
-            ToggleButton.Position = UDim2.new(1, -40, 0.5, -8)
-            ToggleButton.Size = UDim2.new(0, 30, 0, 16)
+            ToggleButton.Parent = Container
+            ToggleButton.Size = UDim2.new(0, 40, 0, 20)
+            ToggleButton.Position = UDim2.new(1, -45, 0.5, -10)
+            ToggleButton.BackgroundColor3 = default and Theme.Success or Theme.Border
             ToggleButton.Text = ""
             
-            AddCorner(ToggleButton, 8)
+            AddCorner(ToggleButton, 10)
             
-            local ToggleDot = Instance.new("Frame")
-            ToggleDot.Parent = ToggleButton
-            ToggleDot.BackgroundColor3 = Theme.Text
-            ToggleDot.Position = defaultValue and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
-            ToggleDot.Size = UDim2.new(0, 12, 0, 12)
+            local Indicator = Instance.new("Frame")
+            Indicator.Parent = ToggleButton
+            Indicator.Size = UDim2.new(0, 16, 0, 16)
+            Indicator.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            Indicator.BackgroundColor3 = Theme.Text
             
-            AddCorner(ToggleDot, 6)
+            AddCorner(Indicator, 8)
             
-            local toggleState = defaultValue
+            local toggled = default
             
             ToggleButton.MouseButton1Click:Connect(function()
-                toggleState = not toggleState
+                toggled = not toggled
                 
-                CreateTween(ToggleButton, { BackgroundColor3 = toggleState and Theme.Success or Theme.Border }):Play()
-                CreateTween(ToggleDot, { Position = toggleState and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6) }):Play()
+                CreateTween(ToggleButton, {
+                    BackgroundColor3 = toggled and Theme.Success or Theme.Border
+                }):Play()
                 
-                callback(toggleState)
+                CreateTween(Indicator, {
+                    Position = toggled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+                }):Play()
+                
+                callback(toggled)
             end)
             
-            local publicMethods = {}
-            function publicMethods:SetValue(value)
-                if toggleState == value then return end
-                toggleState = value
-                CreateTween(ToggleButton, { BackgroundColor3 = toggleState and Theme.Success or Theme.Border }, 0.1):Play()
-                CreateTween(ToggleDot, { Position = toggleState and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6) }, 0.1):Play()
-            end
-            
-            table.insert(Tab.Elements, ToggleFrame)
-            return publicMethods
+            Tab.ElementCount = Tab.ElementCount + 1
+            table.insert(Tab.Elements, Container)
+            return Container
         end
         
         function Tab:CreateLabel(config)
             config = config or {}
-            local labelText = config.Text or "Label"
+            local text = config.Text or "Label"
             
             local Label = Instance.new("TextLabel")
             Label.Name = "Label"
-            Label.Parent = TabContent
+            Label.Parent = TabFrame
+            Label.Size = UDim2.new(1, 0, 0, 25)
             Label.BackgroundTransparency = 1
-            Label.Size = UDim2.new(1, -10, 0, 20) -- Adjusted size for padding
-            Label.Font = Enum.Font.Gotham
-            Label.Text = labelText
+            Label.Text = text
             Label.TextColor3 = Theme.TextSecondary
-            Label.TextSize = 11
+            Label.TextSize = 12
+            Label.Font = Enum.Font.SourceSans
             Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.LayoutOrder = #Tab.Elements + 1
+            Label.LayoutOrder = Tab.ElementCount + 1
             
-            local publicMethods = {}
-            function publicMethods:SetText(text)
-                Label.Text = text
-            end
-            
+            Tab.ElementCount = Tab.ElementCount + 1
             table.insert(Tab.Elements, Label)
-            return publicMethods
+            return Label
         end
+        
+        -- Add to window tabs
+        table.insert(Window.Tabs, Tab)
         
         -- Auto-select first tab
-        if #Window.Tabs == 0 then
-            TabContent.Visible = true
+        if #Window.Tabs == 1 then
+            TabFrame.Visible = true
+            TabButton.BackgroundColor3 = Theme.Accent
+            TabButton.TextColor3 = Theme.Text
             Window.CurrentTab = Tab
-            TabButtonFrame.BackgroundColor3 = Theme.Accent
-            TabLabel.TextColor3 = Theme.Text
         end
         
-        table.insert(Window.Tabs, Tab)
         return Tab
     end
     
-    -- Show Window with Animation
+    -- Show window
     MainFrame.Visible = true
-    MainFrame.Size = UDim2.new(0,0,0,0)
+    MainFrame.Size = UDim2.new(0, 0, 0, 0)
     CreateTween(MainFrame, {Size = windowSize}, 0.4):Play()
     
     return Window
