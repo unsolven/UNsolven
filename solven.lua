@@ -154,14 +154,18 @@ function SolvenUI:CreateWindow(config)
     
     AddCorner(MinimizeButton, 4)
     
-    -- Tab Container
-    local TabContainer = Instance.new("Frame")
+    -- Tab Container (Changed to ScrollingFrame for horizontal scroll)
+    local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = MainFrame
     TabContainer.BackgroundTransparency = 1
     TabContainer.Position = UDim2.new(0, 10, 0, 45)
-    TabContainer.Size = UDim2.new(1, -20, 0, 30)
+    TabContainer.Size = UDim2.new(1, -20, 0, 35) -- Increased height slightly for scrollbar
     TabContainer.BorderSizePixel = 0
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X -- Set to horizontal
+    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.X   -- Auto-resize canvas for tabs
+    TabContainer.ScrollBarThickness = 4                        -- Set scrollbar thickness
+    TabContainer.ScrollBarImageColor3 = Theme.Accent           -- Style the scrollbar
 
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Parent = TabContainer
