@@ -259,26 +259,36 @@ function SolvenUI:CreateWindow(config)
         local tabName = config.Name or "Tab"
         local tabIcon = config.Icon or ""
         
-        -- Create display text
-        local displayText = tabName
+        -- Create tab text
+        local tabDisplayText = tabName
         if tabIcon and tabIcon ~= "" then
-            displayText = tabIcon .. " " .. tabName
+            tabDisplayText = tabIcon .. " " .. tabName
         end
 
+        -- Debug: Print the text to make sure it's not empty
+        print("Creating tab with text: '" .. tabDisplayText .. "'")
+        
         -- Simple TextButton approach
         local TabButton = Instance.new("TextButton")
-        TabButton.Name = tabName .. "_Tab"
+        TabButton.Name = tabName .. "Tab"
         TabButton.Parent = TabContainer
         TabButton.BackgroundColor3 = Theme.Secondary
-        TabButton.Size = UDim2.new(0, 120, 1, 0) -- Fixed width
-        TabButton.AutoButtonColor = false
-        TabButton.Font = Enum.Font.GothamSemibold
-        TabButton.TextColor3 = Theme.TextSecondary
-        TabButton.TextSize = 11
-        TabButton.Text = displayText
-        TabButton.TextTruncate = Enum.TextTruncate.AtEnd
+        TabButton.Size = UDim2.new(0, 120, 1, 0) -- Fixed width instead of auto-size
+        TabButton.Font = Enum.Font.SourceSans -- Try a different font
+        TabButton.Text = tabDisplayText
+        TabButton.TextColor3 = Theme.Text -- Use bright text color
+        TabButton.TextSize = 14 -- Larger text size
+        TabButton.TextStrokeTransparency = 0 -- Add text stroke
+        TabButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        TabButton.BorderSizePixel = 0
+        TabButton.TextScaled = false
+        TabButton.TextWrapped = false
         
         AddCorner(TabButton, 5)
+        
+        -- Force text to be visible
+        wait(0.1)
+        TabButton.Text = tabDisplayText
 
         -- Tab Content (Vertical Scrolling)
         local TabContent = Instance.new("ScrollingFrame")
@@ -305,8 +315,6 @@ function SolvenUI:CreateWindow(config)
         -- Tab Object
         local Tab = {}
         Tab.Content = TabContent
-        Tab.ButtonFrame = TabButtonFrame
-        Tab.Label = TabLabel
         Tab.Button = TabButton
         Tab.Elements = {}
         
@@ -316,27 +324,25 @@ function SolvenUI:CreateWindow(config)
             
             for _, otherTab in pairs(Window.Tabs) do
                 otherTab.Content.Visible = false
-                if otherTab.ButtonFrame.BackgroundColor3 ~= Theme.Secondary then
-                    CreateTween(otherTab.ButtonFrame, { BackgroundColor3 = Theme.Secondary }):Play()
-                    CreateTween(otherTab.Label, { TextColor3 = Theme.TextSecondary }):Play()
-                end
+                CreateTween(otherTab.Button, { BackgroundColor3 = Theme.Secondary }):Play()
+                CreateTween(otherTab.Button, { TextColor3 = Theme.TextSecondary }):Play()
             end
             
             TabContent.Visible = true
             Window.CurrentTab = Tab
-            CreateTween(TabButtonFrame, { BackgroundColor3 = Theme.Accent }):Play()
-            CreateTween(TabLabel, { TextColor3 = Theme.Text }):Play()
+            CreateTween(TabButton, { BackgroundColor3 = Theme.Accent }):Play()
+            CreateTween(TabButton, { TextColor3 = Theme.Text }):Play()
         end)
         
         TabButton.MouseEnter:Connect(function()
             if Window.CurrentTab ~= Tab then
-                CreateTween(TabButtonFrame, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
+                CreateTween(TabButton, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
             if Window.CurrentTab ~= Tab then
-                 CreateTween(TabButtonFrame, { BackgroundColor3 = Theme.Secondary }):Play()
+                CreateTween(TabButton, { BackgroundColor3 = Theme.Secondary }):Play()
             end
         end)
         
