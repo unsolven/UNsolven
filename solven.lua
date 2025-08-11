@@ -285,10 +285,6 @@ function SolvenUI:CreateWindow(config)
         TabButton.TextWrapped = false
         
         AddCorner(TabButton, 5)
-        
-        -- Force text to be visible
-        wait(0.1)
-        TabButton.Text = tabDisplayText
 
         -- Tab Content (Vertical Scrolling)
         local TabContent = Instance.new("ScrollingFrame")
@@ -296,21 +292,31 @@ function SolvenUI:CreateWindow(config)
         TabContent.Parent = ContentContainer
         TabContent.BackgroundTransparency = 1
         TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.ScrollBarThickness = 4
+        TabContent.Position = UDim2.new(0, 0, 0, 0)
+        TabContent.ScrollBarThickness = 6
         TabContent.ScrollBarImageColor3 = Theme.Accent
+        TabContent.ScrollBarImageTransparency = 0
         TabContent.Visible = false
+        TabContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Start with no canvas size
         TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabContent.ScrollingDirection = Enum.ScrollingDirection.Y
         TabContent.BorderSizePixel = 0
+        TabContent.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+        TabContent.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+        TabContent.MidImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
         
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Parent = TabContent
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 6) -- Tighter padding
+        ContentLayout.Padding = UDim.new(0, 6)
+        ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         
         local ContentPadding = Instance.new("UIPadding")
         ContentPadding.Parent = TabContent
-        ContentPadding.PaddingTop = UDim.new(0, 2)
-        ContentPadding.PaddingBottom = UDim.new(0, 2)
+        ContentPadding.PaddingTop = UDim.new(0, 5)
+        ContentPadding.PaddingBottom = UDim.new(0, 5)
+        ContentPadding.PaddingLeft = UDim.new(0, 5)
+        ContentPadding.PaddingRight = UDim.new(0, 5)
         
         -- Tab Object
         local Tab = {}
